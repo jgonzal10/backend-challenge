@@ -27,7 +27,6 @@ export class TaskRunner {
         task.progress = 'starting job...';
         await this.taskRepository.save(task);
         const job = getJobForTaskType(task.taskType);
-
         try {
             console.log(`Starting job ${task.taskType} for task ${task.taskId}...`);
             const resultRepository = this.taskRepository.manager.getRepository(Result);
@@ -47,6 +46,7 @@ export class TaskRunner {
 
             task.status = TaskStatus.Failed;
             task.progress = null;
+            task.output = null;
             await this.taskRepository.save(task);
 
             throw error;
@@ -60,14 +60,16 @@ export class TaskRunner {
             const anyFailed = currentWorkflow.tasks.some(t => t.status === TaskStatus.Failed);
 
             if (anyFailed) {
+
                 currentWorkflow.status = WorkflowStatus.Failed;
             } else if (allCompleted) {
+                console.log("allCompletedallCompleted")
                 currentWorkflow.status = WorkflowStatus.Completed;
             } else {
                 currentWorkflow.status = WorkflowStatus.InProgress;
             }
-
             await workflowRepository.save(currentWorkflow);
         }
     }
 }
+
