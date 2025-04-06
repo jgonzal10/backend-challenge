@@ -17,10 +17,10 @@ export async function taskWorker() {
     let task = previousTaskInProgress
       ? await taskRepository.findOne({
           where: { status: TaskStatus.Queued, taskType: Not("report") },
-          relations: ["workflow"], // Ensure workflow is loaded
+          relations: ["workflow"],
         })
       : await taskRepository.findOne({
-          where: { taskType: "report" },
+          where: { taskType: "report", status: Not(TaskStatus.Completed) },
           relations: ["workflow"],
         });
 

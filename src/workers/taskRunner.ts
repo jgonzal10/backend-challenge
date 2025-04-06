@@ -12,6 +12,12 @@ export enum TaskStatus {
   Failed = "failed",
 }
 
+interface WorkflowReport {
+  taskId: string;
+  output?: string;
+  failureInfo?: string
+}
+
 export class TaskRunner {
   constructor(private taskRepository: Repository<Task>) {}
 
@@ -21,21 +27,26 @@ export class TaskRunner {
    * @throws If the job fails, it rethrows the error.
    */
   async run(task: Task): Promise<void> {
-    if(task.dependency){
-        const dependencyNotCompleted = await this.taskRepository.findOne({
-                where: { stepNumber: task.dependency, status: Not(TaskStatus.Completed)},
-                relations: ["workflow"],
-              });
-        if(dependencyNotCompleted){
-            task = dependencyNotCompleted;
-        }     
+
+    // TODO clean code
+    if (task.dependency) {
+      const dependencyNotCompleted = await this.taskRepository.findOne({
+        where: {
+          stepNumber: task.dependency,
+          status: Not(TaskStatus.Completed),
+        },
+        relations: ["workflow"],
+      });
+      if (dependencyNotCompleted) {
+        task = dependencyNotCompleted;
+      }
     }
 
     const dependency = await this.taskRepository.findOne({
-        where: { stepNumber: task.dependency},
-        relations: ["workflow"],
-      });
-    
+      where: { stepNumber: task.dependency },
+      relations: ["workflow"],
+    });
+
     task.input = dependency?.output;
     task.status = TaskStatus.InProgress;
     task.progress = "starting job...";
@@ -57,6 +68,7 @@ export class TaskRunner {
       task.output = result.data;
       task.status = TaskStatus.Completed;
       task.progress = null;
+      task.input = null;
       await this.taskRepository.save(task);
     } catch (error: any) {
       console.error(
@@ -66,6 +78,7 @@ export class TaskRunner {
 
       task.status = TaskStatus.Failed;
       task.progress = null;
+      task.output = error;
       await this.taskRepository.save(task);
 
       throw error;
@@ -89,13 +102,41 @@ export class TaskRunner {
       if (anyFailed) {
         currentWorkflow.status = WorkflowStatus.Failed;
       } else if (allCompleted) {
-        console.log("allCompletedallCompleted");
-        console.log(currentWorkflow)
+        const completedTask = await this.taskRepository.find({
+          where: { taskType: Not("report") },
+          relations: ["workflow"],
+        });
+        let aggregateResults: WorkflowReport[] = [];
+        if (completedTask) {
+          completedTask.forEach((task) => {
+            aggregateResults.push({
+              taskId: task.taskId,
+              output: task.output || "",
+            });
+          });
+        }
+
+        currentWorkflow.finalResult = JSON.stringify(aggregateResults);
+
         currentWorkflow.status = WorkflowStatus.Completed;
       } else {
         currentWorkflow.status = WorkflowStatus.InProgress;
       }
       await workflowRepository.save(currentWorkflow);
+    }
+  }
+  
+  async getNoCompletedDependencyTask(task: Task): Promise<Task | null | undefined> {
+    if (task.dependency) {
+      const dependencyNotCompleted = await this.taskRepository.findOne({
+        where: {
+          stepNumber: task.dependency,
+          status: Not(TaskStatus.Completed),
+        },
+        relations: ["workflow"],
+      });
+
+      return dependencyNotCompleted;
     }
   }
 }

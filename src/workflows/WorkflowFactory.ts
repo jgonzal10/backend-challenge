@@ -42,6 +42,7 @@ export class WorkflowFactory {
 
         workflow.clientId = clientId;
         workflow.status = WorkflowStatus.Initial;
+        workflow.finalResult="";
 
         const savedWorkflow = await workflowRepository.save(workflow);
 
