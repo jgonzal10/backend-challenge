@@ -12,6 +12,19 @@ export enum WorkflowStatus {
     Failed = 'failed'
 }
 
+export interface WorkflowCurrentStatus {
+    workflowId:string;
+    status:string;
+    completedTasks:number;
+    totalTasks:number
+}
+
+export interface WorkflowResults {
+    workflowId:string;
+    status:string;
+    finalResult:string;
+}
+
 interface WorkflowStep {
     taskType: string;
     stepNumber: number;
