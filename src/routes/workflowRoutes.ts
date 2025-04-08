@@ -57,7 +57,6 @@ workflowRouter.get("/:id/results", async (req, res) => {
     if (!workflow) {
       res.status(404).json({ message: "Workflow not found" });
     }
-
     if (workflow!.status !== WorkflowStatus.Completed) {
       res.status(400).json({ message: "Workflow not completed" });
     }
