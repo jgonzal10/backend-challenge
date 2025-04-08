@@ -9,8 +9,8 @@ import workflowRouter from "./routes/workflowRoutes";
 const app = express();
 app.use(express.json());
 app.use("/analysis", analysisRoutes);
-app.use("/", defaultRoute);
 app.use("/workflow", workflowRouter);
+app.use("/", defaultRoute);
 
 AppDataSource.initialize()
   .then(() => {

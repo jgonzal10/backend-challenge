@@ -1,4 +1,4 @@
-import { In, Not, Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { Task } from "../models/Task";
 import { getJobForTaskType } from "../jobs/JobFactory";
 import { WorkflowStatus } from "../workflows/WorkflowFactory";
@@ -23,29 +23,23 @@ export class TaskRunner {
    */
   async run(task: Task): Promise<void> {
     // Checking if task has a dependency and if yes, then run the dependency first
-    if (task.dependency) {
-      const dependencyNotCompleted = await this.taskRepository.findOne({
-        where: [{
-          stepNumber: task.dependency,
-          status: TaskStatus.Queued,
-        },{
-          stepNumber: task.dependency,
-          status: TaskStatus.InProgress,
-        }],
-        relations: ["workflow"],
-      });
-      if (dependencyNotCompleted) {
-        console.log("Executing job dependency first.");
-        task = dependencyNotCompleted;
-      }
-    }
-
+    const taskDependencyId = task.dependency;
     const dependency = await this.taskRepository.findOne({
-      where: { stepNumber: task.dependency },
+      where: { stepNumber: taskDependencyId },
       relations: ["workflow"],
     });
 
     task.input = dependency?.output;
+
+    if (task.dependency) {
+      const dependencyNotCompleted = await this.findingNotCompletedDependency(
+        task
+      );
+      if (dependencyNotCompleted) {
+        task = dependencyNotCompleted;
+      }
+    }
+
     task.status = TaskStatus.InProgress;
     task.progress = "starting job...";
     await this.taskRepository.save(task);
@@ -55,9 +49,11 @@ export class TaskRunner {
       const resultRepository =
         this.taskRepository.manager.getRepository(Result);
       const taskResult = await job.run(task);
+
       if (taskResult instanceof Error) {
         throw new Error(`Job ${task.taskType} for task ${task.taskId} failed`);
       }
+
       console.log(
         `Job ${task.taskType} for task ${task.taskId} completed successfully.`
       );
@@ -101,26 +97,15 @@ export class TaskRunner {
         (t) => t.status === TaskStatus.Failed
       );
 
+      const finalResult = await this.generateWorkflowFinalResult(
+        this.taskRepository
+      );
+
+      currentWorkflow.finalResult = JSON.stringify(finalResult);
+
       if (anyFailed) {
         currentWorkflow.status = WorkflowStatus.Failed;
       } else if (allCompleted) {
-        const completedTask = await this.taskRepository.find({
-          where: { taskType: Not("report") },
-          relations: ["workflow"],
-        });
-        let aggregateResults: WorkflowReport[] = [];
-        if (completedTask) {
-          completedTask.forEach((task) => {
-            aggregateResults.push({
-              taskId: task.taskId,
-              taskType: task.taskType,
-              output: task.output || "",
-            });
-          });
-        }
-
-        currentWorkflow.finalResult = JSON.stringify(aggregateResults);
-
         currentWorkflow.status = WorkflowStatus.Completed;
       } else {
         currentWorkflow.status = WorkflowStatus.InProgress;
@@ -129,19 +114,41 @@ export class TaskRunner {
     }
   }
 
-  async getNoCompletedDependencyTask(
+  async findingNotCompletedDependency(
     task: Task
   ): Promise<Task | null | undefined> {
-    if (task.dependency) {
-      const dependencyNotCompleted = await this.taskRepository.findOne({
-        where: {
+    const dependencyNotCompleted = await this.taskRepository.findOne({
+      where: [
+        {
           stepNumber: task.dependency,
-          status: Not(TaskStatus.Completed),
+          status: TaskStatus.Queued,
         },
-        relations: ["workflow"],
+        {
+          stepNumber: task.dependency,
+          status: TaskStatus.InProgress,
+        },
+      ],
+      relations: ["workflow"],
+    });
+    return dependencyNotCompleted;
+  }
+  async generateWorkflowFinalResult(
+    taskRepository: Repository<Task>
+  ): Promise<WorkflowReport[] | undefined> {
+    const completedTasks = await taskRepository.find({
+      where: { taskType: Not("report") },
+      relations: ["workflow"],
+    });
+    let aggregateResults: WorkflowReport[] = [];
+    if (completedTasks) {
+      completedTasks.forEach((task) => {
+        aggregateResults.push({
+          taskId: task.taskId,
+          taskType: task.taskType,
+          output: task.output || "",
+        });
       });
-
-      return dependencyNotCompleted;
+      return aggregateResults;
     }
   }
 }
