@@ -3,18 +3,18 @@ import { AppDataSource } from "../data-source";
 import { Task } from "../models/Task";
 import { Workflow } from "../models/Workflow";
 import { TaskStatus } from '../workers/taskRunner';
-import { WorkflowCurrentStatus } from '../workflows/WorkflowFactory';
+import { WorkflowCurrentStatus, WorkflowResults, WorkflowStatus } from '../workflows/WorkflowFactory';
 
 export class WorkflowControler {
   private taskRepository = AppDataSource.getRepository(Task);
+  private workflowRepository = this.taskRepository.manager.getRepository(
+    Workflow
+  );
 
   async getWorkflowById(req:Request, res:Response) {
   try {
     const workflowId = (req.params as { id: string }).id;
-    const workflowRepository = await this.taskRepository.manager.getRepository(
-      Workflow
-    );
-    const workflow = await workflowRepository.findOne({
+    const workflow = await this.workflowRepository.findOne({
       where: { workflowId: workflowId },
       relations: ["tasks"],
     });
@@ -36,5 +36,31 @@ export class WorkflowControler {
     console.error("Error getting workflow:", error);
     res.status(500).json({ message: "Failed to get workflow status" });
   }
+  }
+
+  async getWorkflowResults(req:Request, res:Response){
+    try {
+      const workflowId = (req.params as { id: string }).id;
+      const workflow = await this.workflowRepository.findOne({
+        where: { workflowId: workflowId },
+        relations: ["tasks"],
+      });
+  
+      if (!workflow) {
+        res.status(404).json({ message: "Workflow not found" });
+      }
+      if (workflow!.status !== WorkflowStatus.Completed) {
+        res.status(400).json({ message: "Workflow not completed" });
+      }
+      const workflowResult: WorkflowResults = {
+        workflowId: workflow!.workflowId,
+        status: workflow!.status,
+        finalResult: workflow!.finalResult,
+      };
+      res.status(202).json(workflowResult);
+    } catch (error: any) {
+      console.error("Error getting workflow results:", error);
+      res.status(500);
+    }
   }
 }
