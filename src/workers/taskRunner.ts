@@ -49,7 +49,6 @@ export class TaskRunner {
       const resultRepository =
         this.taskRepository.manager.getRepository(Result);
       const taskResult = await job.run(task);
-
       if (taskResult instanceof Error) {
         throw new Error(`Job ${task.taskType} for task ${task.taskId} failed`);
       }

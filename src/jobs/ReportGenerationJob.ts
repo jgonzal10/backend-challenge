@@ -1,7 +1,7 @@
-import { AppDataSource } from "../data-source";
 import { Task } from "../models/Task";
 import { Workflow } from "../models/Workflow";
 import { Job } from "./Job";
+import { AppDataSource } from "../data-source";
 export interface WorkflowReport {
   taskId: string;
   taskType:string;
@@ -13,8 +13,6 @@ export class ReportGenerationJob implements Job {
     console.log(
       `Gernerating final Report for workflowId ${task.workflow.workflowId}...`
     );
-
-    // TODO clean this code. DI
     const taskRepository = AppDataSource.getRepository(Task);
     const workflowRepository = taskRepository.manager.getRepository(Workflow);
 
