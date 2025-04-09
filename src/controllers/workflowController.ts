@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
-import { AppDataSource } from "../data-source";
-import { Task } from "../models/Task";
 import { Workflow } from "../models/Workflow";
 import { TaskStatus } from '../workers/taskRunner';
 import { WorkflowCurrentStatus, WorkflowResults, WorkflowStatus } from '../workflows/WorkflowFactory';
+import { Repository } from 'typeorm';
 
-export class WorkflowControler {
-  private taskRepository = AppDataSource.getRepository(Task);
-  private workflowRepository = this.taskRepository.manager.getRepository(
-    Workflow
-  );
+export class WorkflowController {
+  constructor(
+    private workflowRepository: Repository<Workflow>
+  ) {}
 
   async getWorkflowById(req:Request, res:Response) {
   try {

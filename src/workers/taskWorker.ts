@@ -6,17 +6,24 @@ import { TaskRunner, TaskStatus } from "./taskRunner";
 export async function taskWorker() {
   const taskRepository = AppDataSource.getRepository(Task);
   const taskRunner = new TaskRunner(taskRepository);
-  while (true) {
-    const nonCompletedOrFailedTasks = await taskRepository.find({
-      where: {
-        taskType: Not("report"),
-        status: Not(In([TaskStatus.Completed, TaskStatus.Failed])),
-      },
-      relations: ["workflow"],
-    });
 
-    const previousTaskInProgress = nonCompletedOrFailedTasks.length > 0; // Checking if there are task in progress
-    let task = previousTaskInProgress
+  const arePreviousTaskCompleted= async (
+  ) : Promise<Boolean> => {
+  const nonCompletedOrFailedTasks = await taskRepository.find({
+    where: {
+      taskType: Not("report"),
+      status: Not(In([TaskStatus.Completed, TaskStatus.Failed])),
+    },
+    relations: ["workflow"],
+  });
+  
+  return nonCompletedOrFailedTasks.length > 0; // Checking if there are task in progress
+  }
+
+
+  while (true) {
+    const missingTaks= await arePreviousTaskCompleted()
+    let task = missingTaks
       ? await taskRepository.findOne({
           where: {
             status: In([TaskStatus.Queued, TaskStatus.InProgress]),
@@ -43,4 +50,7 @@ export async function taskWorker() {
     // Wait before checking for the next task again
     await new Promise((resolve) => setTimeout(resolve, 5000));
   }
+
 }
+
+

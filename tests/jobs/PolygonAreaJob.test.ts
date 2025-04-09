@@ -1,5 +1,5 @@
-import { PolygonAreaJob } from "../src/jobs/PolygonAreaJob";
-import { Task } from "../src/models/Task";
+import { PolygonAreaJob } from "../../src/jobs/PolygonAreaJob";
+import { Task } from "../../src/models/Task";
 import area from "@turf/area";
 jest.mock("@turf/area");
 
@@ -27,7 +27,7 @@ describe("PolygonAreaJob", () => {
     jest.clearAllMocks();
   });
 
-  describe("run", () => {
+  describe("run Polygon Area Job", () => {
     it("should calculate the area for a valid polygon", async () => {
       (area as jest.Mock).mockReturnValue(12345);
 
