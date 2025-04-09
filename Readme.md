@@ -5,8 +5,47 @@
 2. There are three endpoints that can be tested with the Postman collection.
 3. Use the Post Request to start the Jobs.
 4. With http://localhost:3000/workflow/{{id}}/results you will be able to get the result for an especific workflow.
+
+### **Important**
+On my implementation the stepNumber 2 depends on stepNumber 3, meaning that stepNumber 3 should run first. This is defined on the example_workflow.yml like
+
+  - taskType: "notification"
+    stepNumber: 2
+    dependsOn: 3
+  - taskType: "polygonArea"
+    stepNumber: 3
+
+
+### **The Request look like this**
+```
+curl --location 'http://localhost:3000/workflow/25716219-57e0-471b-a190-54be50e6d413/results'
+```
+### **The Response look like this**
+```
+{
+    "workflowId": "25716219-57e0-471b-a190-54be50e6d413",
+    "status": "completed",
+    "finalResult": "[{\"taskId\":\"b82cca5d-e947-4b0b-aec0-47980ff4d694\",\"taskType\":\"analysis\",\"output\":\"\\\"Brazil\\\"\"},{\"taskId\":\"780085d0-10d5-42a1-b4f3-3fad7d0062d8\",\"taskType\":\"notification\",\"output\":\"{}\"},{\"taskId\":\"cf70250e-ccfa-4991-bd6a-a3991defe9b7\",\"taskType\":\"polygonArea\",\"output\":\"8363324.273315565\"}]"
+}
+```
+
+
 5. With http://localhost:3000/workflow/{{id}}/status you will be able to see the estatus.
 
+
+### **The Request look like this**
+```
+curl --location 'http://localhost:3000/workflow/25716219-57e0-471b-a190-54be50e6d413/status'
+```
+### **The Response look like this**
+```
+{
+    "workflowId": "25716219-57e0-471b-a190-54be50e6d413",
+    "status": "completed",
+    "completedTasks": 4,
+    "totalTasks": 4
+}
+```
 
 ### **Run Unit Test**
 1. execute on the terminal the command npm run test.
