@@ -1,5 +1,16 @@
 # Backend Coding Challenge
 
+### **How to test new Features**
+1. Using Postman import the collection and the environment Variables. The files are on the folder postman placed on the root of the project.
+2. There are three endpoints that can be tested with the Postman collection.
+3. Use the Post Request to start the Jobs.
+4. With http://localhost:3000/workflow/{{id}}/results you will be able to get the result for an especific workflow.
+5. With http://localhost:3000/workflow/{{id}}/status you will be able to see the estatus.
+
+
+### **Run Unit Test**
+1. execute on the terminal the command npm run test.
+
 ## Getting Started
 
 1. Fork the Project:
@@ -332,3 +343,5 @@ Implement an API endpoint to retrieve the final results of a completed workflow.
   - Document the API endpoints with request and response examples.
 
 ---
+
+
