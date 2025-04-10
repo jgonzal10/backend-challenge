@@ -4,10 +4,12 @@ import analysisRoutes from "./routes/analysisRoutes";
 import defaultRoute from "./routes/defaultRoute";
 import { taskWorker } from "./workers/taskWorker";
 import { AppDataSource } from "./data-source"; // Import the DataSource instance
+import workflowRouter from "./routes/workflowRoutes";
 
 const app = express();
 app.use(express.json());
 app.use("/analysis", analysisRoutes);
+app.use("/workflow", workflowRouter);
 app.use("/", defaultRoute);
 
 AppDataSource.initialize()

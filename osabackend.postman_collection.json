@@ -1,0 +1,108 @@
+{
+	"info": {
+		"_postman_id": "8ea85ef5-8088-4e0c-9146-8dd67eca67ad",
+		"name": "osabackend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9043118"
+	},
+	"item": [
+		{
+			"name": "http://localhost:3000/analysis",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Set a variable\", () => {\r",
+							"    const jsonData = pm.response.json();\r",
+							"    const workflowId = jsonData.workflowId;\r",
+							"    pm.environment.set(\"id\", workflowId);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"clientId\": \"client123\",\r\n \"geoJson\": {\r\n     \"type\": \"Polygon\",\r\n     \"coordinates\": [\r\n         [\r\n             [\r\n                 -63.624885020050996,\r\n                 -10.311050368263523\r\n             ],\r\n             [\r\n                 -63.624885020050996,\r\n                 -10.367865108370523\r\n             ],\r\n             [\r\n                 -63.61278302732815,\r\n                 -10.367865108370523\r\n             ],\r\n             [\r\n                 -63.61278302732815,\r\n                 -10.311050368263523\r\n             ],\r\n             [\r\n                 -63.624885020050996,\r\n                 -10.311050368263523\r\n             ]\r\n         ]\r\n     ]\r\n }\r\n }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/analysis",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"analysis"
+					]
+				},
+				"description": "Generated from cURL: curl --location 'http://localhost:3000/analysis' \\\r\n--header 'Content-Type: application/json' \\\r\n--data '{\r\n \"clientId\": \"client123\",\r\n \"geoJson\": {\r\n     \"type\": \"Polygon\",\r\n     \"coordinates\": [\r\n         [\r\n             [\r\n                 -63.624885020050996,\r\n                 -10.311050368263523\r\n             ],\r\n             [\r\n                 -63.624885020050996,\r\n                 -10.367865108370523\r\n             ],\r\n             [\r\n                 -63.61278302732815,\r\n                 -10.367865108370523\r\n             ],\r\n             [\r\n                 -63.61278302732815,\r\n                 -10.311050368263523\r\n             ],\r\n             [\r\n                 -63.624885020050996,\r\n                 -10.311050368263523\r\n             ]\r\n         ]\r\n     ]\r\n }\r\n }'"
+			},
+			"response": []
+		},
+		{
+			"name": "getResults",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/workflow/{{id}}/results",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"workflow",
+						"{{id}}",
+						"results"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Workflow status",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/workflow/{{id}}/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"workflow",
+						"{{id}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

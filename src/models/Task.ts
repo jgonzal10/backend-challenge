@@ -30,4 +30,13 @@ export class Task {
 
     @ManyToOne(() => Workflow, workflow => workflow.tasks)
     workflow!: Workflow;
+
+    @Column({ nullable: true, type: 'text' })
+    input?: string | null;
+
+    @Column({ nullable: true, type: 'text' })
+    output?: string | null;
+    
+    @Column({ default: null })
+    dependency?: number;
 }

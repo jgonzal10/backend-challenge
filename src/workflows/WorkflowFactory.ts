@@ -12,9 +12,23 @@ export enum WorkflowStatus {
     Failed = 'failed'
 }
 
+export interface WorkflowCurrentStatus {
+    workflowId:string;
+    status:string;
+    completedTasks:number;
+    totalTasks:number
+}
+
+export interface WorkflowResults {
+    workflowId:string;
+    status:string;
+    finalResult:string;
+}
+
 interface WorkflowStep {
     taskType: string;
     stepNumber: number;
+    dependsOn: number
 }
 
 interface WorkflowDefinition {
@@ -41,6 +55,7 @@ export class WorkflowFactory {
 
         workflow.clientId = clientId;
         workflow.status = WorkflowStatus.Initial;
+        workflow.finalResult="";
 
         const savedWorkflow = await workflowRepository.save(workflow);
 
@@ -51,6 +66,7 @@ export class WorkflowFactory {
             task.status = TaskStatus.Queued;
             task.taskType = step.taskType;
             task.stepNumber = step.stepNumber;
+            task.dependency = step.dependsOn;
             task.workflow = savedWorkflow;
             return task;
         });
